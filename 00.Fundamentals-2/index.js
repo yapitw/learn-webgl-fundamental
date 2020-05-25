@@ -1,8 +1,4 @@
-
-
-
 // 創建着色器方法，輸入參數：渲染上下文，着色器類型，數據源
-const glsl = d => d
 
 function createShader(gl, type, source) {
     var shader = gl.createShader(type) // 創建着色器對象

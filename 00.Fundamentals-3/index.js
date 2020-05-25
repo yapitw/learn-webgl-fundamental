@@ -1,8 +1,4 @@
-
-
-
 // 創建着色器方法，輸入參數：渲染上下文，着色器類型，數據源
-const glsl = d => d
 
 function createShader(gl, type, source) {
     var shader = gl.createShader(type) // 創建着色器對象
@@ -40,21 +36,10 @@ async function main() {
     var program = createProgram(gl, vertexShader, fragmentShader)
     var positionAttributeLocation = gl.getAttribLocation(program, "a_position")
     var resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution")
+    var colorUniformLocation = gl.getUniformLocation(program, "u_color")
+
     var positionBuffer = gl.createBuffer()
-
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-
-    var positions = [
-        10, 20,
-        80, 20,
-        10, 30,
-        10, 30,
-        80, 20,
-        80, 30,
-    ]
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW)
-
 
     gl.canvas.height = window.innerHeight
     gl.canvas.width = window.innerWidth
@@ -85,13 +70,53 @@ async function main() {
 
     gl.vertexAttribPointer(positionAttributeLocation, size, type, normalize, stride, offset)
 
-    // 繪製
-    var primitiveType = gl.TRIANGLES
-    var offset = 0
-    var count = 6
-    gl.drawArrays(primitiveType, offset, count)
+    for (var ii = 0; ii < 50; ++ii) {
+        // 創建一個隨機矩形
+        // 並將寫入位置緩衝
+        // 因爲位置緩衝是我們綁定在
+        // `ARRAY_BUFFER`綁定點上的最後一個緩衝
+        setRectangle(gl,
+            randomInt(gl.canvas.width / 2),
+            randomInt(gl.canvas.height / 2),
+            randomInt(gl.canvas.width / 2),
+            randomInt(gl.canvas.height / 2)
+        )
+
+        // 設置一個隨機顏色
+        gl.uniform4f(colorUniformLocation, Math.random(), Math.random(), Math.random(), 1)
+
+        // 繪製矩形
+        gl.drawArrays(gl.TRIANGLES, 0, 6)
+    }
+
 }
 
 window.onload = main
 
 
+
+
+function randomInt(range) {
+    return Math.floor(Math.random() * range)
+}
+
+function setRectangle(gl, x, y, width, height) {
+    var x1 = x
+    var x2 = x + width
+    var y1 = y
+    var y2 = y + height
+
+    // 注意: gl.bufferData(gl.ARRAY_BUFFER, ...) 將會影響到
+    // 當前綁定點`ARRAY_BUFFER`的綁定緩衝
+    // 目前我們只有一個緩衝，如果我們有多個緩衝
+    // 我們需要先將所需緩衝綁定到`ARRAY_BUFFER`
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        x1, y1,
+        x2, y1,
+        x1, y2,
+        x1, y2,
+        x2, y1,
+        x2, y2
+    ]), gl.STATIC_DRAW)
+}
